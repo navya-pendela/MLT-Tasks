@@ -1,0 +1,92 @@
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import (
+    classification_report, accuracy_score, precision_score, recall_score,
+    confusion_matrix, precision_recall_curve
+)
+
+# Load Titanic dataset
+titanic = sns.load_dataset("titanic")
+
+# Preprocess the data
+titanic.dropna(subset=['age', 'embarked'], inplace=True)
+X = titanic[['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'embarked']]
+X = pd.get_dummies(X, columns=['sex', 'embarked'], drop_first=True)
+y = titanic['survived']
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Decision Tree Classifier
+dt_classifier = DecisionTreeClassifier(random_state=42)
+dt_classifier.fit(X_train, y_train)
+y_pred_dt = dt_classifier.predict(X_test)
+
+# Random Forest Classifier
+rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
+rf_classifier.fit(X_train, y_train)
+y_pred_rf = rf_classifier.predict(X_test)
+
+# Metrics for Decision Tree
+accuracy_dt = accuracy_score(y_test, y_pred_dt)
+precision_dt_val = precision_score(y_test, y_pred_dt)
+recall_dt_val = recall_score(y_test, y_pred_dt)
+
+print("Decision Tree Metrics:")
+print(f'Accuracy: {accuracy_dt:.2f}')
+print(f'Precision: {precision_dt_val:.2f}')
+print(f'Recall: {recall_dt_val:.2f}')
+
+# Confusion Matrix - Decision Tree
+cm_dt = confusion_matrix(y_test, y_pred_dt)
+plt.figure(figsize=(6, 4))
+sns.heatmap(cm_dt, annot=True, fmt='d', cmap='Blues', cbar=False)
+plt.title('Confusion Matrix - Decision Tree')
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.show()
+
+# Precision-Recall Curve - Decision Tree
+precision_dt, recall_dt, _ = precision_recall_curve(y_test, dt_classifier.predict_proba(X_test)[:, 1])
+plt.figure(figsize=(8, 6))
+plt.plot(recall_dt, precision_dt, color='blue', label='Decision Tree')
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision-Recall Curve - Decision Tree')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Metrics for Random Forest
+accuracy_rf = accuracy_score(y_test, y_pred_rf)
+precision_rf_val = precision_score(y_test, y_pred_rf)
+recall_rf_val = recall_score(y_test, y_pred_rf)
+
+print("Random Forest Metrics:")
+print(f'Accuracy: {accuracy_rf:.2f}')
+print(f'Precision: {precision_rf_val:.2f}')
+print(f'Recall: {recall_rf_val:.2f}')
+
+# Confusion Matrix - Random Forest
+cm_rf = confusion_matrix(y_test, y_pred_rf)
+plt.figure(figsize=(6, 4))
+sns.heatmap(cm_rf, annot=True, fmt='d', cmap='Blues', cbar=False)
+plt.title('Confusion Matrix - Random Forest')
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.show()
+
+# Precision-Recall Curve - Random Forest
+precision_rf, recall_rf, _ = precision_recall_curve(y_test, rf_classifier.predict_proba(X_test)[:, 1])
+plt.figure(figsize=(8, 6))
+plt.plot(recall_rf, precision_rf, color='green', label='Random Forest')
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision-Recall Curve - Random Forest')
+plt.legend()
+plt.grid(True)
+plt.show()
