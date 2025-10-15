@@ -1,0 +1,75 @@
+# Install required libraries
+!pip install -q pandas numpy matplotlib scikit-learn seaborn
+
+# Import libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.cluster import KMeans, AffinityPropagation, Birch
+from sklearn.metrics import silhouette_score, davies_bouldin_score, calinski_harabasz_score
+from sklearn.datasets import load_iris
+
+# Load Iris dataset
+iris = load_iris()
+data = pd.DataFrame(data=np.c_[iris['data'], iris['target']],
+                    columns=iris['feature_names'] + ['target'])
+
+# Select relevant features for clustering
+selected_features = ['sepal length (cm)', 'sepal width (cm)', 'petal length (cm)', 'petal width (cm)']
+X = data[selected_features]
+
+# K-means clustering function
+def kmeans_clustering(X, n_clusters=3):
+    model = KMeans(n_clusters=n_clusters, random_state=42)
+    labels = model.fit_predict(X)
+    return labels
+
+# Affinity Propagation clustering function
+def affinity_propagation_clustering(X):
+    model = AffinityPropagation()
+    labels = model.fit_predict(X)
+    return labels
+
+# Birch clustering function
+def birch_clustering(X, n_clusters=3):
+    model = Birch(n_clusters=n_clusters)
+    labels = model.fit_predict(X)
+    return labels
+
+# Function to evaluate clustering metrics
+def evaluate_clustering(X, labels, algorithm):
+    silhouette = silhouette_score(X, labels)
+    db_index = davies_bouldin_score(X, labels)
+    ch_index = calinski_harabasz_score(X, labels)
+
+    print(f'Evaluation Metrics for {algorithm}:')
+    print(f'Silhouette Score: {silhouette:.2f}')
+    print(f'Davies-Bouldin Index: {db_index:.2f}')
+    print(f'Calinski-Harabasz Index: {ch_index:.2f}\n')
+
+# Function to plot clusters
+def plot_clusters(X, labels, algorithm):
+    plt.figure(figsize=(6, 4))
+    plt.scatter(X.iloc[:, 0], X.iloc[:, 1], c=labels, cmap='viridis', marker='o', edgecolors='k')
+    plt.title(f'{algorithm} Clustering')
+    plt.xlabel('Feature 1')
+    plt.ylabel('Feature 2')
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+# Apply K-means clustering
+kmeans_labels = kmeans_clustering(X)
+evaluate_clustering(X, kmeans_labels, 'K-Means')
+plot_clusters(X, kmeans_labels, 'K-Means')
+
+# Apply Affinity Propagation clustering
+affinity_labels = affinity_propagation_clustering(X)
+evaluate_clustering(X, affinity_labels, 'Affinity Propagation')
+plot_clusters(X, affinity_labels, 'Affinity Propagation')
+
+# Apply Birch clustering
+birch_labels = birch_clustering(X)
+evaluate_clustering(X, birch_labels, 'Birch')
+plot_clusters(X, birch_labels, 'Birch')
